@@ -21,8 +21,14 @@ const UserSchema = new mongoose.Schema({
         {
             bookId: String,
             title: String,
+            subtitle: String,
+            publisher: String,
             authors: [String],
             thumbnail: String,
+            description: String, 
+            category: [String], 
+            publishDate: String, 
+            pageCount: Number
         }
     ],
 });

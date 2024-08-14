@@ -22,8 +22,6 @@ exports.registerUser = function(req, res) {
              .catch(err => res.status(500).json({ error: err.message }));
      })
      .catch(err => res.status(500).json({ error: err.message }));
-
-
 };
 
 // Login a user
@@ -52,30 +50,50 @@ exports.loginUser = function(req, res) {
 
 // Add a book to user's favorites
 exports.addToFavorites = (req, res) => {
-    const userId = req.userId; // Assume userId is extracted from the authenticated user's token
-    const { bookId, title, authors, thumbnail } = req.body;
+    const userId = req.userId;
+    const { bookId, title, subtitle, publisher, authors, thumbnail, description, category, publishDate, pageCount } = req.body;
 
-    User.findByIdAndUpdate(
-        userId,
-        {
-            $push: {
-                favorites: {
-                    bookId,
-                    title,
-                    authors,
-                    thumbnail
-                }
-            }
-        },
-        { new: true }
-    )
-    .then(updatedUser => {
-        res.status(200).json({ message: 'Book added to favorites', favorites: updatedUser.favorites });
-    })
-    .catch(error => {
-        res.status(500).json({ error: 'Failed to add book to favorites' });
+    console.log("Attempting to add favorite book:", {
+        bookId, title, subtitle, publisher, authors, thumbnail, description, category, publishDate, pageCount
     });
+
+    //Check if the book already exists within the user's favorite books
+    User.findOne({ _id: userId, 'favorites.bookId': bookId })
+        .then(user => {
+            if (user) {
+                return;
+            }
+
+            //If the book does not exist, add it to the user's favorite books
+            return User.findByIdAndUpdate(
+                userId,
+                {
+                    $push: {
+                        favorites: {
+                            bookId,
+                            title,
+                            subtitle,
+                            publisher,
+                            authors,
+                            thumbnail,
+                            description,
+                            category, 
+                            publishDate, 
+                            pageCount
+                        }
+                    }
+                },
+                { new: true }
+            );
+        })
+        .then(updatedUser => {
+            res.status(200).json({ message: 'Book added to favorites', favorites: updatedUser.favorites });
+        })
+        .catch(error => {
+            res.status(500).json({ error: 'Failed to add book to favorites' });
+        });
 };
+
 
 //Fetches all the user's favorite books
 exports.getFavoriteBooks = (req, res) => {
